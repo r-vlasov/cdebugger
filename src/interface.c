@@ -1,13 +1,15 @@
 #include "include/interface.h"
-#include "include/parse.h"
 #include "include/breakpoint.h"
+#include "include/parse.h"
 #include "include/registers.h"
 #include "include/signals.h"
+//#include "include/dwarf.hpp"
 
 #include <stdio.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
 #include <sys/user.h>
+
 static char* 	dbprogram_name;
 static pid_t 	dbprogram_id;
 
@@ -28,7 +30,7 @@ static void wait_signal()
 }
 
 
-int continue_exec()
+static int continue_exec()
 {
 	step_to_breakpoint(dbprogram_id);
 	
@@ -38,7 +40,7 @@ int continue_exec()
 }	
 
 
-int singlestep_exec()
+static int singlestep_exec()
 {
 	if (ptrace(PTRACE_SINGLESTEP, dbprogram_id, 0, 0))
 	{
@@ -53,21 +55,21 @@ int singlestep_exec()
 	ptrace(PTRACE_GETREGS, dbprogram_id, 0, &regs);
 	
 	
-	printf( "stopped at: 0x%08x\n", regs.rip);
+	printf( "stopped at: 0x%08llx\n", regs.rip);
 	
 
 	return 0;
 }
 
 
-int dump_regs_exec()
+static int dump_regs_exec()
 {
 	dump_registers(dbprogram_id);
 	return 0;
 }
 
 
-int exec_command(char** cmd)
+static int exec_command(char** cmd)
 {
 	if (!strcmp(cmd[0], "continue"))
 		return continue_exec();
@@ -120,6 +122,8 @@ int run_debug(pid_t pid, char* program)
 	dbprogram_id = pid;
 	
 	breakpoints_init();
+//	db_inform_init(program);
+
 
 	while(1)
 	{

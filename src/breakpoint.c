@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern list_t* breakpoint_list;
+
+
+list_t* breakpoint_list;
 
 
 int breakpoint_compare(void* address, void* list_node_value)
@@ -103,7 +105,7 @@ int breakpoint_disable(pid_t dbpid, long address)
 	}
 	else
 	{
-		fprintf(stderr, "can't find the breakpoint with address 0x%08x\n", (long)address);
+		fprintf(stderr, "can't find the breakpoint with address 0x%08lx\n", (long)address);
 		return -1;
 	}
 	return 0;
