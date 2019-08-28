@@ -7,7 +7,7 @@
 
 char* parse_read_line()
 {
-	char* line = readline("cdbg> ");
+	char* line = readline("\ncdbg> ");
 	return line;
 }
 
@@ -48,18 +48,6 @@ char** parse_tokenize_line(char* line)
 	cmd[i] = NULL;
 	return cmd;
 }
-
-void test()
-{
-	char** testing = parse_tokenize_line(parse_read_line());
-	printf("\n");
-	for (int i = 0; testing[i] != NULL; i++)
-	{
-		printf(testing[i]);
-		printf("\n");
-	}
-}
-
 
 #endif
 

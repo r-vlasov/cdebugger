@@ -3,7 +3,7 @@
 #include <sys/ptrace.h>
 #include <stdio.h>
 
-long get_ip(pid_t pid)
+long long get_ip(pid_t pid)
 {
 	struct user_regs_struct regs;
 	ptrace(PTRACE_GETREGS, pid, 0, &regs);
@@ -11,7 +11,7 @@ long get_ip(pid_t pid)
 }
 
 
-void set_ip(pid_t pid, long ip)
+void set_ip(pid_t pid, long long ip)
 {
 	struct user_regs_struct regs;
 	ptrace(PTRACE_GETREGS, pid, 0, &regs);

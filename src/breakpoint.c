@@ -1,4 +1,7 @@
 #include "include/breakpoint.h"
+#include "include/registers.h"
+#include "include/signals.h"
+
 #include "ds/lists.h"
 #include <sys/user.h>
 #include <sys/ptrace.h>
@@ -72,16 +75,13 @@ int breakpoint_enable(pid_t dbpid, long address)
 
 int breakpoint_disable(pid_t dbpid, long address)
 {
-	struct user_regs_struct regs;
-	ptrace(PTRACE_GETREGS, dbpid, 0, &regs);
-	
-	
-	printf( "stopped at: 0x%08x\n", --regs.rip);
-	ptrace(PTRACE_SETREGS, dbpid, 0, &regs);
+	long long rip = get_ip(dbpid);
+	set_ip(dbpid, rip-1);
+
+
 
 	list_node_t* node_bp = list_search(breakpoint_list, (void*) address, &breakpoint_compare);
 	breakpoint_t* bp;
-
 
 	if (node_bp != NULL)
 	{
@@ -97,7 +97,7 @@ int breakpoint_disable(pid_t dbpid, long address)
 			bp->enabled = 0;
 		else
 		{
-			fprintf(stderr, "disable breakpoint that was disabled");
+			fprintf(stderr, "disable breakpoint that was disabled\n");
 			return -1;
 		}
 	}
@@ -108,4 +108,25 @@ int breakpoint_disable(pid_t dbpid, long address)
 	}
 	return 0;
 }
+
+
+void step_to_breakpoint(pid_t pid)
+{
+	long long cur_rip = get_ip(pid) - 1;
+
+	list_node_t* node_bp = list_search(breakpoint_list, (void*) cur_rip, &breakpoint_compare);
+	breakpoint_t* bp;
+
+	if ( node_bp != NULL )
+	{
+		breakpoint_disable(pid, cur_rip);
+		ptrace(PTRACE_SINGLESTEP, pid, 0, 0);
+		
+		handle_signal(pid);
+
+		breakpoint_enable(pid, cur_rip);
+	}
+	ptrace(PTRACE_CONT, pid, 0, 0);
+}
+
 

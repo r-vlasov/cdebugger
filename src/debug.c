@@ -16,12 +16,16 @@ int main(int argc, char* argv[])
 	{
 		if (ptrace(PTRACE_TRACEME, NULL, NULL, NULL) < 0)
 		{
-			printf("ptrace error");
+			fprintf(stderr, "ptrace error\n");
 		}
 		execl(program, program, NULL);
 	}
 	else
 	{	
-		run_debug(debug_pid, program);
+		if (!run_debug(debug_pid, program))
+			return 0;
+		
+		fprintf(stderr, "Stop debug with fail!\n");
+		return -1;
 	}
 }

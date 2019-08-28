@@ -2,14 +2,24 @@
 #include "include/parse.h"
 #include "include/breakpoint.h"
 #include "include/registers.h"
+#include "include/signals.h"
+
 #include <stdio.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
 #include <sys/user.h>
-
 static char* 	dbprogram_name;
 static pid_t 	dbprogram_id;
 
+
+static void free_cmd(char** cmd)
+{
+	for(int i = 0; cmd[i] != NULL; i++)
+	{
+		free(cmd[i]);
+	}
+	free(cmd);
+}
 
 static void wait_signal()
 {
@@ -20,12 +30,8 @@ static void wait_signal()
 
 int continue_exec()
 {
-	if (ptrace(PTRACE_CONT, dbprogram_id, 0, 0))
-	{
-		fprintf(stderr, "ptrace continue error");
-		return -1;
-	}
-
+	step_to_breakpoint(dbprogram_id);
+	
 	wait_signal();
 	return 0;
 
@@ -100,13 +106,14 @@ int exec_command(char** cmd)
 		printf("Unknown command\n");
 		return 0;
 	}
+
+	free_cmd(cmd);
 }
 
 
 int run_debug(pid_t pid, char* program)
 {
-	int wait_status;
-	waitpid(pid, &wait_status, 0);
+	handle_signal(pid);
 
 	dbprogram_name = program;
 	printf("Start debugging program : %s\n", program);
