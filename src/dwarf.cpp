@@ -61,14 +61,16 @@ dwarf::line_table::iterator get_line_entry_from_pc(long long pc) {
 }
 
 
-void set_breakpoint_at_function(int pid, const std::string& name) {
-    for (const auto& cu : __dwarf.compilation_units()) {
+void set_breakpoint_at_function(int pid, char* c_name) {
+	std::string name(c_name);
+	for (const auto& cu : __dwarf.compilation_units()) {
         for (const auto& die : cu.root()) {
             if (die.has(dwarf::DW_AT::name) && at_name(die) == name) {
                 auto low_pc = at_low_pc(die);
                 auto entry = get_line_entry_from_pc(low_pc);
                 ++entry; //skip prologue
                 breakpoint_enable(pid, entry->address);
+		std::cout << "Set breakpoint at " << name << "address 0x" << std::hex << entry->address << std::endl;
             }
         }
     }
