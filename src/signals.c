@@ -27,12 +27,12 @@
 
 static void handle_sigtrap(pid_t pid)
 {
-	fprintf(stderr, "SIGTRAP at 0x%08llx\n", get_ip(pid));
+	fprintf(stderr, "\n\t> SIGTRAP at 0x%08llx\n", get_ip(pid));
 }
 
 static void handle_sigsegv(pid_t pid)
 {
-	fprintf(stderr, "SIGSEGV at 0x%08llx\n", get_ip(pid));
+	fprintf(stderr, "\n\t> SIGSEGV at 0x%08llx\n", get_ip(pid));
 }
 
 void handle_signal(pid_t pid)
@@ -43,7 +43,7 @@ void handle_signal(pid_t pid)
 
 	if (WIFEXITED(status) || WIFSIGNALED(status))
 	{
-		fprintf(stderr, "exit\n");
+		fprintf(stderr, "\n\t\texit\n");
 		return;
 	}
 	else
@@ -60,7 +60,7 @@ void handle_signal(pid_t pid)
 				return;
 			default:
 						
-				fprintf(stderr, "child stopped with signal %d\n", signum);
+				fprintf(stderr, "\nchild stopped with signal %d\n", signum);
 				return;
 		}
 	}

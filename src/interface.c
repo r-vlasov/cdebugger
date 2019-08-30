@@ -18,20 +18,9 @@ static pid_t 	dbprogram_id;
 
 
 int db_inform_init(char*);
-void set_breakpoint_at_function(int, char*);
+int set_breakpoint_at_function(int, char*);
+void print_source_from_ip(char* file_n, long long ip);
 
-/*
-extern "C" {
-	void 		breakpoints_init();
-	int 		breakpoint_enable(pid_t dbpid, long address);
-	int 		breakpoint_disable(pid_t dbpid, long address);
-	void 		step_to_breakpoint(pid_t pid);
-
-	void		dump_registers(pid_t pid);
-
-	void 		handle_signal(pid_t pid);
-}
-*/
 
 static void free_cmd(char** cmd)
 {
@@ -62,13 +51,12 @@ static int singlestep_exec()
 {
 	if (ptrace(PTRACE_SINGLESTEP, dbprogram_id, 0, 0))
 	{
-		fprintf(stderr, "ptrace single step error");
+		fprintf(stderr, "ptrace single step error\n");
 		return -1;
 	}
 
-	wait_signal();
+	handle_signal(dbprogram_id);
 
-	
 	struct user_regs_struct regs;
 	ptrace(PTRACE_GETREGS, dbprogram_id, 0, &regs);
 	
@@ -86,25 +74,59 @@ static int dump_regs_exec()
 	return 0;
 }
 
+static int add_bp_at_address(long long address)
+{
+	fprintf(stderr, "\tSet breakpoint at 0x%08llx\n", address);
+	return breakpoint_enable(dbprogram_id, address);
+}
+
+static int add_bp_at_function(char* name)
+{
+	fprintf(stderr, "\tSet breakpoint at %s\n", name);
+	return set_breakpoint_at_function(dbprogram_id, name);
+}
+
+/* bug */
+static int set_registers(char **cmd)
+{
+	if (!strcmp(cmd[0], "rip"))
+	{
+		set_ip(dbprogram_id, atohexi(cmd[1]));
+		return 0;
+	}
+	return -1;
+}
 
 static int exec_command(char** cmd)
 {
 	if (!strcmp(cmd[0], "continue"))
 		return continue_exec();
 	
-	else if (!strcmp(cmd[0], "bp"))
+	else if (!strcmp(cmd[0], "breakpoint"))
 	{
-		if (cmd[1][0] >= '0' && cmd[1][0] <= '9')
+		if (cmd[1][0] >= '1' && cmd[1][0] <= '9')
 		{
-			long address = atoi(cmd[1]);
-			return breakpoint_enable(dbprogram_id, address);
+			long long address = atoi(cmd[1]);
+			//return breakpoint_enable(dbprogram_id, address);
+		
+			return add_bp_at_address(address);
 		}
-		else if (cmd[1][0] >= 'a' && cmd[1][0] <= 'z')
+		
+		else if(cmd[1][0] == '0' && cmd[1][1] == 'x')
 		{
-			set_breakpoint_at_function(dbprogram_id, cmd[1]);
-			return 0;
+			long long address = atohexi(&cmd[1][2]);
+			return add_bp_at_address(address);
 		}
-		else return -1;
+
+		else if ((cmd[1][0] >= 'a' && cmd[1][0] <= 'z') || (cmd[1][0] >= 'A' && cmd[1][0] <= 'Z') || cmd[1][0] == '_')
+		{
+			//set_breakpoint_at_function(dbprogram_id, cmd[1]);
+			//return 0;
+			return add_bp_at_function(cmd[1]);
+
+		}
+		else 
+			return -1;
 	}
 	
 	else if (!strcmp(cmd[0], "dump"))
@@ -114,7 +136,12 @@ static int exec_command(char** cmd)
 		else
 			return -1;
 	}
-
+	
+	else if (!strcmp(cmd[0], "setreg"))
+	{
+		return set_registers(&cmd[1]);
+	}
+	
 	else if (!strcmp(cmd[0], "step"))
 	{
 		return singlestep_exec();
@@ -122,6 +149,8 @@ static int exec_command(char** cmd)
 
 	else if (!strcmp(cmd[0], "exit"))
 	{
+		free_cmd(cmd);
+		remove_breakpoints();
 		exit(0);
 	}
 	else
@@ -129,7 +158,7 @@ static int exec_command(char** cmd)
 		printf("Unknown command\n");
 		return 0;
 	}
-
+	
 	free_cmd(cmd);
 }
 

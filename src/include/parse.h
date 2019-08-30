@@ -50,5 +50,33 @@ char** parse_tokenize_line(char* line)
 	return cmd;
 }
 
+
+long long atohexi(char* arr)
+{
+	int length = strlen(arr);
+	long long result = 0;
+	for(int i = 0; i < length; i++)
+	{
+		result *= 16;
+		if (arr[i] >= '0' && arr[i] <= '9')
+		{
+			result += arr[i] - '0';
+			continue;
+		}
+		if (arr[i] >= 'a' && arr[i] <= 'f')
+		{
+			result += arr[i] + 10 - 'a';
+			continue;
+		}
+		if (arr[i] >= 'A' && arr[i] <= 'F')
+		{
+			result += arr[i] + 10 - 'A';
+			continue;
+		}
+	}
+
+	return result;
+
+}
 #endif
 

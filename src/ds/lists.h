@@ -21,7 +21,7 @@ typedef struct list {
 	void		list_add(list_t* list, void* value);
 	void 		list_set_head(list_t* list, void* value);
 	list_node_t*	list_search(list_t* list, void* value, int (*comparator)(void*, void*));
-
+	void		list_remove(list_t* list);
 
 
 #endif

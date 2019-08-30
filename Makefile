@@ -9,6 +9,7 @@ OBJ_FILES := $(wildcard $(OBJ_DIR)/*.o)
 EXT_LIBS := external/libelfin/dwarf/libdwarf++.so external/libelfin/elf/libelf++.so
 READ_LINE := -lreadline
 
+EXTERNING = export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/qfour/learning/cdebugger/external/libelfin/dwarf
 
 
 cdbg:	$(OBJ_FILES) 

@@ -7,7 +7,8 @@
 
 extern "C"  {
 	int 	db_inform_init(char* progname);
-	void 	set_breakpoint_at_function(int pid, char* name);
+	int 	set_breakpoint_at_function(int pid, char* name);
+	void 	print_source_from_ip(char* file_n, long long ip);
 }
 
 
@@ -19,6 +20,7 @@ dwarf::line_table::iterator 	get_line_entry_from_pc(long long pc);
 
 
 void 	print_source(const std::string& file_name, unsigned line, unsigned n_lines_context);
+
 
 
 #endif

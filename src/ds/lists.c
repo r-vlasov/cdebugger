@@ -58,3 +58,19 @@ list_node_t*	list_search(list_t* list, void* value, int (*comparator)(void*, voi
 		return NULL;
 	}
 }
+
+
+void 		list_remove(list_t* list)
+{
+	if(list->nodes)
+	{
+		list_node_t* temp = list->head;
+		while(temp != NULL)
+		{
+			temp = temp->prev;
+			free(list->head);
+			list->head = temp;
+		}
+	}
+	free(list);
+}

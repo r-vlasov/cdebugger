@@ -40,7 +40,7 @@ breakpoint_t* breakpoint_create(pid_t dbpid, void* value)
 
 
 
-int breakpoint_enable(pid_t dbpid, long address)
+int breakpoint_enable(pid_t dbpid, long long address)
 {
 	list_node_t* node_bp = list_search(breakpoint_list, (void*) address, &breakpoint_compare);
 	breakpoint_t* bp;
@@ -69,13 +69,14 @@ int breakpoint_enable(pid_t dbpid, long address)
 		fprintf(stderr, "ptrace pokedata error\n");
 		return -1;
 	}
-	
+
+
 	return 0;
 }
 
 
 
-int breakpoint_disable(pid_t dbpid, long address)
+int breakpoint_disable(pid_t dbpid, long long address)
 {
 	long long rip = get_ip(dbpid);
 	set_ip(dbpid, rip-1);
@@ -132,3 +133,7 @@ void step_to_breakpoint(pid_t pid)
 }
 
 
+void remove_breakpoints()
+{
+	list_remove(breakpoint_list);
+}

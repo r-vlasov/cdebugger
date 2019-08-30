@@ -9,6 +9,12 @@
 
 int main(int argc, char* argv[])
 {
+	if (argc != 2)
+	{
+		fprintf(stderr, "please, enter name of gebugge program");
+		return 0;
+	}
+
 	char* program = argv[1];
 	pid_t debug_pid = fork();
 	if (debug_pid == 0)

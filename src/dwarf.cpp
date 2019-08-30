@@ -43,68 +43,86 @@ dwarf::die get_function_from_pc(long long pc)
 }
 
 
-dwarf::line_table::iterator get_line_entry_from_pc(long long pc) {
-    for (auto &cu : __dwarf.compilation_units()) {
-        if (die_pc_range(cu.root()).contains(pc)) {
-            auto &lt = cu.get_line_table();
-            auto it = lt.find_address(pc);
-            if (it == lt.end()) {
-                throw std::out_of_range{"Cannot find line entry"};
-            }
-            else {
-                return it;
-            }
-        }
-    }
+dwarf::line_table::iterator get_line_entry_from_pc(long long pc) 
+{
+    	for (auto &cu : __dwarf.compilation_units()) 
+	{
+        	if (die_pc_range(cu.root()).contains(pc)) 
+		{
+            		auto &lt = cu.get_line_table();
+            		auto it = lt.find_address(pc);
+            		if (it == lt.end()) 
+			{
+                		throw std::out_of_range{"Cannot find line entry"};
+            		}
+            		else 
+			{
+                		return it;
+            		}
+        	}	
+    	}
 
-    throw std::out_of_range{"Cannot find line entry"};
+    	throw std::out_of_range{"Cannot find line entry"};
+}
+
+void print_source(char* fn, unsigned line, unsigned n_lines_context) 
+{
+	std::string file_name(fn);
+    	std::ifstream file {file_name};
+
+    	//Work out a window around the desired line
+    	auto start_line = line <= n_lines_context ? 1 : line - n_lines_context;
+    	auto end_line = line + n_lines_context + (line < n_lines_context ? n_lines_context - line : 0) + 1;
+
+    	char c{};
+    	auto current_line = 1u;
+    	//Skip lines up until start_line
+   	while (current_line != start_line && file.get(c)) 
+	{
+        	if (c == '\n') 
+		{
+            		++current_line;
+        	}
+    	}
+
+    	//Output cursor if we're at the current line
+    	std::cout << (current_line==line ? "> " : "  ");
+
+    	//Write lines up until end_line
+    	while (current_line <= end_line && file.get(c)) 
+	{
+		std::cout << c;
+        	if (c == '\n') 
+		{
+            		++current_line;
+            		//Output cursor if we're at the current line
+            		std::cout << (current_line==line ? "> " : "  ");
+        	}
+    	}
+
+    	//Write newline and make sure that the stream is flushed properly
+    	std::cout << std::endl;
 }
 
 
-void set_breakpoint_at_function(int pid, char* c_name) {
+int set_breakpoint_at_function(int pid, char* c_name) 
+{
 	std::string name(c_name);
-	for (const auto& cu : __dwarf.compilation_units()) {
-        for (const auto& die : cu.root()) {
-            if (die.has(dwarf::DW_AT::name) && at_name(die) == name) {
-                auto low_pc = at_low_pc(die);
-                auto entry = get_line_entry_from_pc(low_pc);
-                ++entry; //skip prologue
-                breakpoint_enable(pid, entry->address);
-		std::cout << "Set breakpoint at " << name << "address 0x" << std::hex << entry->address << std::endl;
-            }
-        }
-    }
+	for (const auto& cu : __dwarf.compilation_units()) 
+	{
+        	for (const auto& die : cu.root()) 
+		{
+         	  	if (die.has(dwarf::DW_AT::name) && at_name(die) == name) 
+			{
+              			auto low_pc = at_low_pc(die);
+                		auto entry = get_line_entry_from_pc(low_pc);
+                		++entry; //skip prologue
+                		breakpoint_enable(pid, entry->address);
+				return 0;
+            		}
+        	}
+    	}
+	return -1;
 }
 
-void print_source(const std::string& file_name, unsigned line, unsigned n_lines_context) {
-    std::ifstream file {file_name};
 
-    //Work out a window around the desired line
-    auto start_line = line <= n_lines_context ? 1 : line - n_lines_context;
-    auto end_line = line + n_lines_context + (line < n_lines_context ? n_lines_context - line : 0) + 1;
-
-    char c{};
-    auto current_line = 1u;
-    //Skip lines up until start_line
-    while (current_line != start_line && file.get(c)) {
-        if (c == '\n') {
-            ++current_line;
-        }
-    }
-
-    //Output cursor if we're at the current line
-    std::cout << (current_line==line ? "> " : "  ");
-
-    //Write lines up until end_line
-    while (current_line <= end_line && file.get(c)) {
-        std::cout << c;
-        if (c == '\n') {
-            ++current_line;
-            //Output cursor if we're at the current line
-            std::cout << (current_line==line ? "> " : "  ");
-        }
-    }
-
-    //Write newline and make sure that the stream is flushed properly
-    std::cout << std::endl;
-}
