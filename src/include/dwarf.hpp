@@ -10,6 +10,7 @@ extern "C"  {
 	int 	set_breakpoint_at_function(int pid, char* name);
 	int 	set_breakpoint_at_line(int pid, char* name, unsigned long line);
 	void 	print_source_from_ip(char* file_n, long long ip);
+	void 	print_source_line(char* file, long long pc);
 }
 
 

@@ -21,6 +21,7 @@ breakpoint_t*	breakpoint_create(pid_t dbpid, void* value);
 int 		breakpoint_enable(pid_t dbpid, long long address);
 int 		breakpoint_disable(pid_t dbpid, long long address);
 void 		step_to_breakpoint(pid_t pid);
+void 		singlestepping_start(pid_t pid);
 
 
 

@@ -20,8 +20,7 @@ static pid_t 	dbprogram_id;
 int db_inform_init(char*);
 int set_breakpoint_at_function(int, char*);
 int set_breakpoint_at_line(pid_t, char*, unsigned long);
-void print_source_from_ip(char* file_n, long long ip);
-
+void print_source_line(char*, long long);
 
 static void free_cmd(char** cmd)
 {
@@ -48,7 +47,13 @@ static int continue_exec()
 }	
 
 
-static int singlestep_exec()
+static int singlestep_start()
+{
+	singlestepping_start(dbprogram_id);
+	return 0;
+}
+
+/*static int singlestep_exec()
 {
 	if (ptrace(PTRACE_SINGLESTEP, dbprogram_id, 0, 0))
 	{
@@ -61,12 +66,13 @@ static int singlestep_exec()
 	struct user_regs_struct regs;
 	ptrace(PTRACE_GETREGS, dbprogram_id, 0, &regs);
 	
-	
+		
 	printf( "stopped at: 0x%08llx\n", regs.rip);
-	
+	print_source_line(dbprogram_name, get_ip(dbprogram_id));
 
 	return 0;
 }
+*/
 
 
 static int dump_regs_exec()
@@ -94,7 +100,6 @@ static int add_bp_at_line(char* line)
 	return set_breakpoint_at_line(dbprogram_id, dbprogram_name, nline);
 }
 
-/* bug */
 static int set_registers(char **cmd)
 {
 	if (!strcmp(cmd[0], "rip"))
@@ -150,10 +155,10 @@ static int exec_command(char** cmd)
 	{
 		return set_registers(&cmd[1]);
 	}
-	
+
 	else if (!strcmp(cmd[0], "step"))
 	{
-		return singlestep_exec();
+		return singlestep_start();
 	}
 
 	else if (!strcmp(cmd[0], "exit"))

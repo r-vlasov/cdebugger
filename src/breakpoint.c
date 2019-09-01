@@ -118,6 +118,23 @@ void step_to_breakpoint(pid_t pid)
 	long long cur_rip = get_ip(pid) - 1;
 
 	list_node_t* node_bp = list_search(breakpoint_list, (void*) cur_rip, &breakpoint_compare);
+	if ( node_bp != NULL )
+	{
+		breakpoint_disable(pid, cur_rip);
+		ptrace(PTRACE_SINGLESTEP, pid, 0, 0);
+		
+		handle_signal(pid);
+
+		breakpoint_enable(pid, cur_rip);
+	}
+	ptrace(PTRACE_CONT, pid, 0, 0);
+}
+
+
+void singlestepping_start(pid_t pid)
+{
+	long long cur_rip = get_ip(pid) - 1;
+	list_node_t* node_bp = list_search(breakpoint_list, (void*) cur_rip, &breakpoint_compare);
 	breakpoint_t* bp;
 
 	if ( node_bp != NULL )
@@ -129,7 +146,12 @@ void step_to_breakpoint(pid_t pid)
 
 		breakpoint_enable(pid, cur_rip);
 	}
-	ptrace(PTRACE_CONT, pid, 0, 0);
+	else
+	{
+		ptrace(PTRACE_SINGLESTEP, pid, 0, 0);	
+		handle_signal(pid);
+	}
+
 }
 
 

@@ -18,6 +18,7 @@ int db_inform_init(char* progname)
 
 	__elf = elf::elf(elf::create_mmap_loader(fd));
 	__dwarf = dwarf::dwarf(dwarf::elf::create_loader(__elf));
+	return 0;
 }
 
 
@@ -53,7 +54,7 @@ dwarf::line_table::iterator get_line_entry_from_pc(long long pc)
             		auto it = lt.find_address(pc);
             		if (it == lt.end()) 
 			{
-                		throw std::out_of_range{"Cannot find line entry"};
+                		throw std::out_of_range{"Can't find line entry"};
             		}
             		else 
 			{
@@ -104,6 +105,11 @@ void print_source(char* fn, unsigned line, unsigned n_lines_context)
     	std::cout << std::endl;
 }
 
+void print_source_line(char* fn, long long pc)
+{
+	auto line_entry = get_line_entry_from_pc(pc);
+	print_source(fn, line_entry->line, 2);
+}
 
 int set_breakpoint_at_function(int pid, char* c_name) 
 {

@@ -2,6 +2,7 @@ CPP = g++
 
 OBJ_DIR := obj
 EXECUTABLE := bin/cdbg.exe
+RUN := ./bin/cdbg.exe
 SRC_DIR := src
 
 
@@ -11,7 +12,18 @@ READ_LINE := -lreadline
 
 EXTERNING = export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/qfour/learning/cdebugger/external/libelfin/dwarf
 
+TEST1 = test/hello
+TEST2 = test/segfault
 
-cdbg:	$(OBJ_FILES) 
-	$(MAKE) -C $(SRC_DIR) 
-	$(CPP) $^ $(EXT_LIBS) $(READ_LINE) -o $(EXECUTABLE)
+
+assembly:	$(OBJ_FILES) 
+		$(MAKE) -C $(SRC_DIR) 
+		$(CPP) $^ $(EXT_LIBS) $(READ_LINE) -o $(EXECUTABLE)
+
+
+check: 	
+	$(RUN) $(TEST1)
+	$(RUN) $(TEST2)
+
+
+
