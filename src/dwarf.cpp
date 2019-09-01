@@ -126,3 +126,22 @@ int set_breakpoint_at_function(int pid, char* c_name)
 }
 
 
+int set_breakpoint_at_line(int pid, char* f_name, unsigned long line)
+{
+	std::string file(f_name);
+	for(const auto& cu : __dwarf.compilation_units())
+	{
+		const auto& lt = cu.get_line_table();
+		for (const auto& entry : lt)
+		{
+			if(entry.is_stmt && entry.line == line)
+			{
+				breakpoint_enable(pid, entry.address);
+				return 0;
+			}
+		}
+	}
+	return -1;
+}
+
+

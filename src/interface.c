@@ -19,6 +19,7 @@ static pid_t 	dbprogram_id;
 
 int db_inform_init(char*);
 int set_breakpoint_at_function(int, char*);
+int set_breakpoint_at_line(pid_t, char*, unsigned long);
 void print_source_from_ip(char* file_n, long long ip);
 
 
@@ -86,6 +87,13 @@ static int add_bp_at_function(char* name)
 	return set_breakpoint_at_function(dbprogram_id, name);
 }
 
+static int add_bp_at_line(char* line)
+{
+	int nline = atoi(line);
+	fprintf(stderr, "\tSet breakpoint at line #%d\n", nline);
+	return set_breakpoint_at_line(dbprogram_id, dbprogram_name, nline);
+}
+
 /* bug */
 static int set_registers(char **cmd)
 {
@@ -107,8 +115,6 @@ static int exec_command(char** cmd)
 		if (cmd[1][0] >= '1' && cmd[1][0] <= '9')
 		{
 			long long address = atoi(cmd[1]);
-			//return breakpoint_enable(dbprogram_id, address);
-		
 			return add_bp_at_address(address);
 		}
 		
@@ -117,11 +123,14 @@ static int exec_command(char** cmd)
 			long long address = atohexi(&cmd[1][2]);
 			return add_bp_at_address(address);
 		}
+		
+		else if (!strcmp("line", cmd[1]))
+		{
+			return add_bp_at_line(cmd[2]);
+		}
 
 		else if ((cmd[1][0] >= 'a' && cmd[1][0] <= 'z') || (cmd[1][0] >= 'A' && cmd[1][0] <= 'Z') || cmd[1][0] == '_')
 		{
-			//set_breakpoint_at_function(dbprogram_id, cmd[1]);
-			//return 0;
 			return add_bp_at_function(cmd[1]);
 
 		}

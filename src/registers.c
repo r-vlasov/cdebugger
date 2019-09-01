@@ -16,7 +16,6 @@ void set_ip(pid_t pid, long long ip)
 	struct user_regs_struct regs;
 	ptrace(PTRACE_GETREGS, pid, 0, &regs);
 	regs.rip = ip;
-
 	ptrace(PTRACE_SETREGS, pid, 0, &regs);
 }
 
